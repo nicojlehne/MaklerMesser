@@ -6,19 +6,10 @@ import sys;
 
 zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""];
 
-#
-###
-##############################################################################################
 class Raum:
     def __init__(self, raumZahl: int):
         self.raumZahl = raumZahl;
-##############################################################################################
-###
-#
 
-#
-###
-###################################################################################################################
 class TeilFläche:
     def __init__(self, raumNummer: int, teilFlächenNummer: int, teilFlächenLänge: float, teilFlächenBreite: float):
         self.raumNummer = raumNummer;
@@ -26,23 +17,11 @@ class TeilFläche:
         self.teilFlächenLänge = teilFlächenLänge;
         self.teilFlächenBreite = teilFlächenBreite;
         self.teilFläche = teilFlächenLänge * teilFlächenBreite;
-###################################################################################################################
-###
-#
 
-#
-###
-############################
 def clearScr():
     import os
     os.system("cls||clear");
-############################
-###
-#
 
-#
-###
-###################################################################
 def getInput(prompt: str, dataType):
     while True:
         response = input(prompt);
@@ -54,13 +33,7 @@ def getInput(prompt: str, dataType):
                     print("Bitte geben Sie eine valide Zahl ein.");
                 case "str":
                     print("Bitte geben Sie valide Symbole ein.");
-###################################################################
-###
-#
 
-#
-###
-#####################################################################################################################################
 def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = False, zimmerWahl = None, teilFlächenWahl = None, wertWahl = None, neueLänge = None, neueBreite = None):
     for Zimmer in raumListe:
         raumFläche = 0;
@@ -101,7 +74,12 @@ def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = Fals
     print(len(teilFlächenListe) - j - startingPoint);
     while True:
         teilFlächenWahl = getInput("Welche dieser Teilflächen wollen Sie bearbeiten?: ", int) + startingPoint if teilFlächenWahl is None else teilFlächenWahl;
-        if teilFlächenWahl > len(teilFlächenListe) - j:
+        if teilFlächenWahl >= len(teilFlächenListe) - j:
+            print("Teilfläche ist nicht in Liste.");
+            teilFlächenWahl = None;
+            continue;
+        else:
+            break;
             
     print(teilFlächenWahl);
 
@@ -128,13 +106,7 @@ def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = Fals
                 print("Bitte geben Sie eine der angegebenen Optionen (l/b/d) ein");
     
     return (raumListe, teilFlächenListe);
-#####################################################################################################################################
-###
-#
 
-#
-###
-############################################################################################################
 def getRaum(raumListe: list = [], teilFlächenListe: list = []):
     raumAnzahl = 0;
 
@@ -189,7 +161,7 @@ def main():
                 TeilFläche(3, 3, 8, 8)
                 ],
                 listOnly=False,
-                zimmerWahl=2,
+                zimmerWahl=1,
                 #teilFlächenWahl=2,
                 teilFlächenWahl=None,
                 wertWahl="b",
