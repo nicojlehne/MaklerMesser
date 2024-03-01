@@ -116,7 +116,8 @@ def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = Fals
             case "d":
                 teilFlächenListe.pop(teilFlächenWahl);
                 #if len(teilFlächenListe) < 2:
-                if getCount(teilFlächenListe, "raumNummer", teilFlächenWahl) == 0:
+                print(getCount(teilFlächenListe, "raumNummer", zimmerWahl));
+                if getCount(teilFlächenListe, "raumNummer", zimmerWahl) == 0:
                     #raumListe.pop(zimmerWahl);
                     raumListe.pop(zimmerWahl - 1);
                     #(raumListe, teilFlächenListe) = delRaum(zimmerWahl, raumListe, teilFlächenListe)
