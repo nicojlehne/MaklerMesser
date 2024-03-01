@@ -115,12 +115,8 @@ def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = Fals
                 break;
             case "d":
                 teilFlächenListe.pop(teilFlächenWahl);
-                #if len(teilFlächenListe) < 2:
-                print(getCount(teilFlächenListe, "raumNummer", zimmerWahl));
                 if getCount(teilFlächenListe, "raumNummer", zimmerWahl) == 0:
-                    #raumListe.pop(zimmerWahl);
                     raumListe.pop(zimmerWahl - 1);
-                    #(raumListe, teilFlächenListe) = delRaum(zimmerWahl, raumListe, teilFlächenListe)
                 break;
             case "n":
                 break;
@@ -158,24 +154,7 @@ def getRaum(raumListe: list = [], teilFlächenListe: list = []):
         else:
             break;
     return (raumListe, teilFlächenListe);
-############################################################################################################
-###
-#
-def delRaum(delRoom: int, raumListe: list = [], teilFlächenListe: list = []):
-    ergebnisRaumListe: list = [];
-    ergebnisTeilflächenListe: list = [];
-    for Raum in raumListe:
-        if Raum.raumZahl is not delRoom:
-            ergebnisRaumListe.append(Raum);
-    for Teilfläche in teilFlächenListe:
-        if Teilfläche.raumNummer is not delRoom:
-            ergebnisTeilflächenListe.append(Teilfläche);
-    return (ergebnisRaumListe, ergebnisTeilflächenListe);
 
-
-#
-###
-##########################################################################################################################################
 def main():
     gebäudeFläche = 0;
     if (len(sys.argv) > 1):
@@ -238,9 +217,6 @@ def main():
         gebäudeFläche += raumFläche;
     print("Die gesamte Fläche des Gebäudes beträgt:", str(gebäudeFläche) + "m²");
     print("Der Durchschnitt der Fläche des Gebäudes beträgt:", str(gebäudeFläche / (len(raumListe) if len(raumListe) > 0 else 1)) + "m²");
-##########################################################################################################################################
-###
-#
 
 if __name__ == "__main__":
     main();
