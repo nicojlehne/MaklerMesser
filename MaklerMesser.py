@@ -11,14 +11,14 @@ class Raum:
         self.raumZahl = raumZahl;
 
 class TeilFläche:
-    def __init__(self, raumNummer: int, teilFlächenNummer: int, teilFlächenLänge: float, teilFlächenBreite: float):
+    def __init__(self, raumNummer: int, teilFlächenNummer: int, teilFlächenLänge: float, teilFlächenBreite: float, teilFläche: float = 0):
         self.raumNummer = raumNummer;
         self.teilFlächenNummer = teilFlächenNummer;
         self.teilFlächenLänge = teilFlächenLänge;
         self.teilFlächenBreite = teilFlächenBreite;
         self.teilFläche = teilFlächenLänge * teilFlächenBreite;
     def __str__(self):
-        return str(("Raum:", self.raumNummer, "Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
+        return str(("Raum:", self.raumNummer, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
 
 def clearScr():
     import os
@@ -28,6 +28,23 @@ def getStartIndex(iterable, key, value):
     for item in iterable:
         if getattr(item, key) == value:
             return iterable.index(item);
+
+def getCount(iterable, key, value):
+    count = 0;
+    for item in iterable:
+        if getattr(item, key) == value:
+            count += 1;
+    return count;
+
+def refreshKeys(iterable, key: str, refresherKey: str, updaterKey: str):
+    for item in iterable:
+        setattr(item, key, getattr(item, refresherKey) * getattr(item, updaterKey))
+    return iterable;
+
+def updateRoomDesignations(iterable):
+    for item in iterable:
+        setattr(item, "raumZahl", getattr(item, "raumZahl") - 1);
+    return iterable;
 
 def getInput(prompt: str, dataType):
     while True:
@@ -50,9 +67,7 @@ def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = Fals
             if TeilFläche.raumNummer == Zimmer.raumZahl:
                 raumFläche += TeilFläche.teilFläche;
         print(
-              "Zimmer: [" +
-              str(Zimmer.raumZahl) +
-              "]",
+              "Zimmer: [" + str(Zimmer.raumZahl) + "]",
               str(raumFläche) + "m²"
               );
     if listOnly:
@@ -63,22 +78,19 @@ def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = Fals
 
     j = 0;
     startingPoint = getStartIndex(teilFlächenListe, "raumNummer", zimmerWahl);
-    print("Starting point is:", startingPoint);
     for TeilFläche in teilFlächenListe:
         if TeilFläche.raumNummer == zimmerWahl:
             j += 1;
             print(
-                "Teilfläche [" +
-                str(j) +
-                "] Länge:",
+                "Teilfläche [" + str(j) + "] Länge:",
                 str(TeilFläche.teilFlächenLänge),
                 "Breite:",
                 str(TeilFläche.teilFlächenBreite)
                 );
     
     while True:
-        teilFlächenAuswahl = getInput("Welche dieser Teilflächen wollen Sie bearbeiten?: ", int);
-        teilFlächenWahl = teilFlächenAuswahl + startingPoint - 1 if teilFlächenWahl is None else teilFlächenWahl;
+        teilFlächenAuswahl = getInput("Welche dieser Teilflächen wollen Sie bearbeiten?: ", int) if teilFlächenWahl is None else teilFlächenWahl;
+        teilFlächenWahl = teilFlächenAuswahl + startingPoint - 1;
         if teilFlächenWahl >= j + startingPoint or teilFlächenWahl < startingPoint:
             print("Teilfläche ist nicht in Liste.");
             teilFlächenWahl = None;
@@ -94,24 +106,26 @@ def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = Fals
         wertWahl = getInput("Welchen dieser Werte wollen Sie bearbeiten? [l/b/(d zum Löschen des Eintrags)]: ", str).lower() if wertWahl is None else wertWahl;
         match wertWahl:
             case "l":
-                neueLänge = getInput("Welchen Wert wollen Sie statt " + str(teilFlächenListe[teilFlächenWahl].teilFlächenLänge) + " eintragen?: ", float) if neueLänge is None else neueLänge;
+                neueLänge = getInput("Welche Länge wollen Sie statt " + str(teilFlächenListe[teilFlächenWahl].teilFlächenLänge) + " eintragen?: ", float) if neueLänge is None else neueLänge;
                 teilFlächenListe[teilFlächenWahl].teilFlächenLänge = neueLänge;
                 break;
             case "b":
-                neueBreite = getInput("Welchen Wert wollen Sie statt " + str(teilFlächenListe[teilFlächenWahl].teilFlächenBreite) + " eintragen?: ", float) if neueBreite is None else neueBreite;
-                print(teilFlächenListe[teilFlächenWahl].teilFlächenBreite)
-                print(teilFlächenListe[teilFlächenWahl]);
+                neueBreite = getInput("Welchen Breite wollen Sie statt " + str(teilFlächenListe[teilFlächenWahl].teilFlächenBreite) + " eintragen?: ", float) if neueBreite is None else neueBreite;
                 teilFlächenListe[teilFlächenWahl].teilFlächenBreite = neueBreite;
-                print(teilFlächenListe[teilFlächenWahl].teilFlächenBreite)
-                print(teilFlächenListe[teilFlächenWahl]);
                 break;
             case "d":
                 teilFlächenListe.pop(teilFlächenWahl);
-                if len(teilFlächenListe) < 2:
+                #if len(teilFlächenListe) < 2:
+                if getCount(teilFlächenListe, "raumNummer", teilFlächenWahl) == 0:
+                    #raumListe.pop(zimmerWahl);
                     raumListe.pop(zimmerWahl - 1);
+                    #(raumListe, teilFlächenListe) = delRaum(zimmerWahl, raumListe, teilFlächenListe)
+                break;
+            case "n":
                 break;
             case _:
                 print("Bitte geben Sie eine der angegebenen Optionen (l/b/d) ein");
+                continue;
     
     return (raumListe, teilFlächenListe);
 
@@ -146,6 +160,17 @@ def getRaum(raumListe: list = [], teilFlächenListe: list = []):
 ############################################################################################################
 ###
 #
+def delRaum(delRoom: int, raumListe: list = [], teilFlächenListe: list = []):
+    ergebnisRaumListe: list = [];
+    ergebnisTeilflächenListe: list = [];
+    for Raum in raumListe:
+        if Raum.raumZahl is not delRoom:
+            ergebnisRaumListe.append(Raum);
+    for Teilfläche in teilFlächenListe:
+        if Teilfläche.raumNummer is not delRoom:
+            ergebnisTeilflächenListe.append(Teilfläche);
+    return (ergebnisRaumListe, ergebnisTeilflächenListe);
+
 
 #
 ###
@@ -153,7 +178,7 @@ def getRaum(raumListe: list = [], teilFlächenListe: list = []):
 def main():
     gebäudeFläche = 0;
     if (len(sys.argv) > 1):
-        if (sys.argv[1] == "-d"):
+        if (sys.argv[1] == "-d"): # Use py/python/python3 MaklerMesser.py -d to run a test run with the following predefined settings
             clearScr();
             (raumListe, teilFlächenListe) = numberEditor(raumListe=[
                 Raum(1),
@@ -172,12 +197,13 @@ def main():
                 listOnly=False,
                 zimmerWahl=2,
                 #teilFlächenWahl=2,
-                teilFlächenWahl=None,
+                teilFlächenWahl=1,
                 wertWahl="b",
                 neueLänge=4,
                 neueBreite=5
                 );
 
+            teilFlächenListe = refreshKeys(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
             for Zimmer in raumListe:
                 raumFläche = 0;
                 for TeilFlaeche in teilFlächenListe:
@@ -193,6 +219,7 @@ def main():
     
     while True:
         clearScr();
+        teilFlächenListe = refreshKeys(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
         zahlenEditor = getInput("Wollen Sie die Eingaben anpassen? [J/n/(a zum Ansehen)]: ", str);
         if zahlenEditor in zustimmungsArgumente:
             (raumListe, teilFlächenListe) = numberEditor(raumListe, teilFlächenListe);
@@ -204,7 +231,7 @@ def main():
     for Zimmer in raumListe:
         raumFläche = 0;
         for TeilFlaeche in teilFlächenListe:
-            if TeilFlaeche == Zimmer.raumZahl:
+            if TeilFlaeche.raumNummer == Zimmer.raumZahl:
                 raumFläche += TeilFlaeche.teilFläche;
         print("Die Fläche für Raum", Zimmer.raumZahl, "beträgt:", str(raumFläche) + "m²");
         gebäudeFläche += raumFläche;
