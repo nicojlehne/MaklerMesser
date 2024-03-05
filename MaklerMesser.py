@@ -2,9 +2,7 @@
 # Using '+' instead of ',' to concatenate strings makes Python add the values together,
 # which doesn't work for strings and ints for example. Reduces readability, of course. #TypeError
 
-import sys;
-
-# TeilFläche.teilFläche automatically calculates itself and can be refreshed with refreshKeys(iterable, key: str, refresherKey: str, updaterKey: str);
+# TeilFläche.teilFläche automatically calculates itself on entry and can be refreshed with refreshKeys(iterable, key: str, refresherKey: str, updaterKey: str);
 class TeilFläche:
     teilFlächenNummer: int = 0;
     raumNummerKomparator: int = 1;
@@ -26,23 +24,11 @@ class TeilFläche:
 
 zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""];
 
-# Only used in dbg(), may be removed later; IGNORE
-dbgTeilFlächenListe=[
-                TeilFläche(1, 1, 1),                 # [0] Room 1, Area 1
-                TeilFläche(1, 2, 2),                 # [1] Room 1, Area 2
-                TeilFläche(2, 3, 3),                 # [2] Room 2, Area 1
-                TeilFläche(2, 4, 4),                 # [3] Room 2, Area 2
-                TeilFläche(2, 5, 5),                 # [4] Room 2, Area 3
-                TeilFläche(3, 6, 6),                 # [5] Room 3, Area 1
-                TeilFläche(3, 7, 7),                 # [6] Room 3, Area 2
-                TeilFläche(3, 8, 8)                  # [7] Room 3, Area 3
-                ];
-
 def clearScr() -> None:
     import os
     os.system("cls||clear"); # Simplistic method to clear the console, if cls doesn't work run clear, and vice versa.
 
-# This function returns the index of the first occurrence of a key with specific value in an array of objects
+# This function returns the index of the first occurrence of a key with specific value in an array of objects.
 # 
 # array[];
 # i = 1; j = 0;
@@ -63,15 +49,6 @@ def getStartIndex(iterable: list, key: str, value: any) -> int:
         if getattr(item, key) == value:
             return iterable.index(item);
     return 0;
-
-# Returns the amount of keys with a specific value in an array of objects.
-# Returns 0 if empty, index starts at 0.
-def getCount(iterable: list, key: str, value: any) -> int:
-    count = 0;
-    for item in iterable:
-        if getattr(item, key) == value:
-            count += 1;
-    return count;
 
 # Returns the amount of individually keyed objects
 # Meaning if a list is 1, 2, 3, 3, 4, 4, 5, it'll return 5, for example
@@ -186,7 +163,6 @@ def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = N
             case _:
                 print("Bitte geben Sie eine der angegebenen Optionen (l|b|d) ein");
                 continue;
-    
     return teilFlächenListe;
 
 def getRaum(teilFlächenListe: list = []) -> tuple:
@@ -194,12 +170,11 @@ def getRaum(teilFlächenListe: list = []) -> tuple:
 
     while True:
         raumAnzahl += 1;
-        raumLänge = raumBreite = raumFläche = 0;
+        raumLänge = raumBreite = 0;
 
         while True:
             raumLänge = getInput("Geben Sie die Länge des Raumes oder der Teilfläche in m² ein: ", float);
             raumBreite = getInput("Geben Sie die Breite des Raumes oder der Teilfläche in m² ein: ", float);
-            raumFläche += raumLänge * raumBreite;
 
             teilFlächenVorhanden = getInput("Sind weitere Teilflächen vorhanden? [J/n]: ", str).lower();
             if teilFlächenVorhanden in zustimmungsArgumente:
@@ -228,46 +203,13 @@ def calculateResult(teilFlächenListe: list = []) -> list:
         print("Die Fläche für Raum", i, "beträgt:", str(raumFläche) + "m²");
         gebäudeFläche += raumFläche;
     print("Die gesamte Fläche des Gebäudes beträgt:", str(gebäudeFläche) + "m²");
-    print("Die durchschnittliche Fläche eines Raumes beträgt:", str(gebäudeFläche / (anzahlRäume if anzahlRäume > 0 else 1)) + "m²");
-    return (teilFlächenListe);
-
-def dbg(dbgListOnly = False, dbgZimmerWahl = None, dbgTeilFlächenWahl = None, dbgWertWahl = None, dbgNeueLänge = None, dbgNeueBreite = None) -> tuple:
-    while True:
-        clearScr();
-        teilFlächenListe = numberEditor(
-            teilFlächenListe=dbgTeilFlächenListe,           # Predefined at top, CTRL+Click to find.
-            listOnly=dbgListOnly,
-            zimmerWahl=dbgZimmerWahl,
-            teilFlächenWahl=dbgTeilFlächenWahl,
-            wertWahl=dbgWertWahl,
-            neueLänge=dbgNeueLänge,
-            neueBreite=dbgNeueBreite
-            );
-
-        teilFlächenListe = calculateResult(teilFlächenListe);
-        continuator = getInput("Wiederholen? (J|n) ", str, False);
-        if continuator in zustimmungsArgumente:
-            continue;
-        exit(0);
+    print("Die durchschnittliche Fläche eines Raumes beträgt:", str(gebäudeFläche / (anzahlRäume if anzahlRäume > 0 else 1)) + "m²"); # Don't get confused, this just gets rid of div/0
+    return teilFlächenListe;
 
 def main() -> int:
-    if (len(sys.argv) > 1):
-        match sys.argv[1]:
-            case "-dO": dbg(dbgListOnly=False, dbgZimmerWahl=2, dbgTeilFlächenWahl=1, dbgWertWahl="b", dbgNeueLänge=4, dbgNeueBreite=5);  # Use py/python/python3 MaklerMesser.py -dO to run a test run with the following predefined settings
-            case "-dTFL":
-                for item in dbgTeilFlächenListe:
-                    print(item); # Use py/python/python3 MaklerMesser.py -dTFL to print the insides of dbgTeilFlächenListe
-                return 0;
-            case "-dGIC":
-                print("Filled list:", getIndividualCount(dbgTeilFlächenListe, "raumNummer"));
-                print("Empty list:", getIndividualCount([], ""));
-                return 0;
-            case _: dbg();  # Use py/python/python3 MaklerMesser.py with any other argument to run a test run with predefined arrays but no options
-
     teilFlächenListe = getRaum();
     
     while True:
-        clearScr();
         teilFlächenListe = refreshKeys(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
         zahlenEditor = getInput("Wollen Sie die Eingaben anpassen? [J|n|(a zum Ansehen)]: ", str);
         if zahlenEditor in zustimmungsArgumente:
