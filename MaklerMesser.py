@@ -2,7 +2,7 @@
 # Using '+' instead of ',' to concatenate strings makes Python add the values together,
 # which doesn't work for strings and ints for example. Reduces readability, of course. #TypeError
 
-# TeilFläche.teilFläche automatically calculates itself on entry and can be refreshed with refreshKeys(iterable, key: str, refresherKey: str, updaterKey: str);
+# TeilFläche.teilFläche automatically calculates itself on entry and can be refreshed with refreshArea(iterable, key: str, refresherKey: str, updaterKey: str);
 class TeilFläche:
     teilFlächenNummer: int = 0;
     raumNummerKomparator: int = 1;
