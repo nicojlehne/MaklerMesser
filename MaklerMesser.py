@@ -60,7 +60,6 @@ def getIndividualCount(iterable: list, key: str) -> int:
         individualKeys.append(getattr(item, key));
     return len(individualKeys);
 
-# This is a bad name as the function only multiplies two keys to set a third.
 # This function is only used to recalculate TeilFläche.teilFläche after creation.
 def refreshArea(iterable: list, areaKey: str, multiplikand: str, multiplikator: str) -> list:
     for item in iterable:
@@ -153,7 +152,7 @@ def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = N
                 break;
             case "d":
                 teilFlächenListe.pop(teilFlächenWahl);
-                updateRoomDesignations(teilFlächenListe, zimmerWahl);
+                updateRoomDesignations(teilFlächenListe, zimmerWahl); # This does nothing if all rooms still have at least one partial area
                 break;
             case "n":
                 break;
