@@ -100,9 +100,13 @@ def refreshKeys(iterable: list, key: str, refresherKey: str, updaterKey: str) ->
 
 # This function would be used to update room designations after a rooms values have been deleted
 # TODO: get index missing value and only decrease above rooms designations
-def updateRoomDesignations(iterable: list) -> list:
+def updateRoomDesignations(iterable: list, deletedRoom: int) -> list:
     for item in iterable:
-        setattr(item, "raumZahl", getattr(item, "raumZahl") - 1);
+        if getattr(item, "raumNummer") == deletedRoom:    # Check if room actually missing and immediately return if that's the case
+            return iterable;
+    for item in iterable:
+        if getattr(item, "raumNummer") > deletedRoom:
+            setattr(item, "raumNummer", getattr(item, "raumNummer") - 1);
     return iterable;
 
 # Safely gets input of any type
@@ -127,14 +131,15 @@ def getInput(prompt: str, dataType: any, clear: bool = True) -> any:
 # Arguments starting at listOnly can be supplied to test different zones in this function
 # e.g. leaving zimmerWahl None, but setting teilFlächenWahl, would let you enter a zimmerWahl and skip the prompt for teilFlächenWahl
 # Use explicitly named arguments for easier usage
-def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = False, zimmerWahl = None, teilFlächenWahl = None, wertWahl = None, neueLänge = None, neueBreite = None) -> tuple:
-    for Zimmer in raumListe:
+def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = None, teilFlächenWahl = None, wertWahl = None, neueLänge = None, neueBreite = None) -> list:
+    anzahlRäume = getIndividualCount(teilFlächenListe, "raumNummer");
+    for i in range(1, anzahlRäume + 1):
         raumFläche = 0;
         for TeilFläche in teilFlächenListe:
-            if TeilFläche.raumNummer == Zimmer.raumZahl:
+            if TeilFläche.raumNummer == i:
                 raumFläche += TeilFläche.teilFläche;
         print(
-              "Zimmer: [" + str(Zimmer.raumZahl) + "]",
+              "Zimmer: [" + str(i) + "]",
               str(raumFläche) + "m²"
               );
     if listOnly:
@@ -182,8 +187,7 @@ def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = Fals
                 break;
             case "d":
                 teilFlächenListe.pop(teilFlächenWahl);
-                if getCount(teilFlächenListe, "raumNummer", zimmerWahl) == 0:
-                    raumListe.pop(zimmerWahl - 1);
+                updateRoomDesignations(teilFlächenListe, zimmerWahl);
                 break;
             case "n":
                 break;
@@ -191,7 +195,7 @@ def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = Fals
                 print("Bitte geben Sie eine der angegebenen Optionen (l|b|d) ein");
                 continue;
     
-    return (raumListe, teilFlächenListe);
+    return teilFlächenListe;
 
 def getRaum(raumListe: list = [], teilFlächenListe: list = []) -> tuple:
     raumAnzahl = 0;
@@ -237,20 +241,23 @@ def calculateResult(teilFlächenListe: list = []) -> list:
     return (teilFlächenListe);
 
 def dbg(dbgListOnly = False, dbgZimmerWahl = None, dbgTeilFlächenWahl = None, dbgWertWahl = None, dbgNeueLänge = None, dbgNeueBreite = None) -> tuple:
-    clearScr();
-    (raumListe, teilFlächenListe) = numberEditor(
-        raumListe=dbgRaumListe,                         # Predefined at top, CTRL+Click to find.
-        teilFlächenListe=dbgTeilFlächenListe,           # Predefined at top, CTRL+Click to find.
-        listOnly=dbgListOnly,
-        zimmerWahl=dbgZimmerWahl,
-        teilFlächenWahl=dbgTeilFlächenWahl,
-        wertWahl=dbgWertWahl,
-        neueLänge=dbgNeueLänge,
-        neueBreite=dbgNeueBreite
-        );
+    while True:
+        clearScr();
+        teilFlächenListe = numberEditor(
+            teilFlächenListe=dbgTeilFlächenListe,           # Predefined at top, CTRL+Click to find.
+            listOnly=dbgListOnly,
+            zimmerWahl=dbgZimmerWahl,
+            teilFlächenWahl=dbgTeilFlächenWahl,
+            wertWahl=dbgWertWahl,
+            neueLänge=dbgNeueLänge,
+            neueBreite=dbgNeueBreite
+            );
 
-    teilFlächenListe = calculateResult(teilFlächenListe);
-    exit(0);
+        teilFlächenListe = calculateResult(teilFlächenListe);
+        continuator = getInput("Wiederholen? (J|n) ", str, False);
+        if continuator in zustimmungsArgumente:
+            continue;
+        exit(0);
 
 def main() -> int:
     if (len(sys.argv) > 1):
@@ -271,7 +278,7 @@ def main() -> int:
     while True:
         clearScr();
         teilFlächenListe = refreshKeys(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
-        zahlenEditor = getInput("Wollen Sie die Eingaben anpassen? [J/n/(a zum Ansehen)]: ", str);
+        zahlenEditor = getInput("Wollen Sie die Eingaben anpassen? [J|n|(a zum Ansehen)]: ", str);
         if zahlenEditor in zustimmungsArgumente:
             (raumListe, teilFlächenListe) = numberEditor(raumListe, teilFlächenListe);
         elif zahlenEditor == "a":
