@@ -7,16 +7,16 @@ class TeilFläche:
     teilFlächenNummer: int = 0;
     raumNummerKomparator: int = 1;
 
-    def __init__(self, raumNummer: int, teilFlächenLänge: float, teilFlächenBreite: float):
+    def __init__(self, raumNummer: int):
         self.__class__.teilFlächenNummer += 1;
         if raumNummer > self.__class__.raumNummerKomparator:
             self.__class__.teilFlächenNummer = 1;
 
         self.raumNummer = raumNummer;
         self.teilFlächenNummer = self.__class__.teilFlächenNummer;
-        self.teilFlächenLänge = teilFlächenLänge;
-        self.teilFlächenBreite = teilFlächenBreite;
-        self.teilFläche = teilFlächenLänge * teilFlächenBreite;
+        self.teilFlächenLänge = getInput("Geben Sie die Länge des Raumes oder der Teilfläche in m² ein: ", float);
+        self.teilFlächenBreite = getInput("Geben Sie die Breite des Raumes oder der Teilfläche in m² ein: ", float);
+        self.teilFläche = self.teilFlächenLänge * self.teilFlächenBreite;
 
         self.__class__.raumNummerKomparator = raumNummer;
     def __str__(self):
@@ -170,19 +170,14 @@ def getRaum(teilFlächenListe: list = []) -> tuple:
 
     while True:
         raumAnzahl += 1;
-        raumLänge = raumBreite = 0;
-
         while True:
-            raumLänge = getInput("Geben Sie die Länge des Raumes oder der Teilfläche in m² ein: ", float);
-            raumBreite = getInput("Geben Sie die Breite des Raumes oder der Teilfläche in m² ein: ", float);
+            teilFlächenListe.append(TeilFläche(raumAnzahl));
 
             teilFlächenVorhanden = getInput("Sind weitere Teilflächen vorhanden? [J/n]: ", str).lower();
             if teilFlächenVorhanden in zustimmungsArgumente:
-                teilFlächenListe.append(TeilFläche(raumAnzahl, raumLänge, raumBreite));
                 continue;
             else:
                 break;
-        teilFlächenListe.append(TeilFläche(raumAnzahl, raumLänge, raumBreite));
 
         mehrRäume = getInput("Sind weitere Räume vorhanden? [J/n]: ", str).lower();
         if mehrRäume in zustimmungsArgumente:
