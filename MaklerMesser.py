@@ -4,11 +4,6 @@
 
 import sys;
 
-# This class is pretty much obsolete after adding TeilFläche and will be removed
-class Raum:
-    def __init__(self, raumZahl: int):
-        self.raumZahl = raumZahl; # Same value as TeilFläche.raumNummer
-
 # TeilFläche.teilFläche automatically calculates itself and can be refreshed with refreshKeys(iterable, key: str, refresherKey: str, updaterKey: str);
 class TeilFläche:
     teilFlächenNummer: int = 0;
@@ -30,9 +25,6 @@ class TeilFläche:
         return str(("Raum:", self.raumNummer, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
 
 zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""];
-
-# Only used in dbg(), may be removed later; IGNORE
-dbgRaumListe=[Raum(1), Raum(2), Raum(3)];
 
 # Only used in dbg(), may be removed later; IGNORE
 dbgTeilFlächenListe=[
@@ -197,7 +189,7 @@ def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = N
     
     return teilFlächenListe;
 
-def getRaum(raumListe: list = [], teilFlächenListe: list = []) -> tuple:
+def getRaum(teilFlächenListe: list = []) -> tuple:
     raumAnzahl = 0;
 
     while True:
@@ -216,14 +208,13 @@ def getRaum(raumListe: list = [], teilFlächenListe: list = []) -> tuple:
             else:
                 break;
         teilFlächenListe.append(TeilFläche(raumAnzahl, raumLänge, raumBreite));
-        raumListe.append(Raum(raumAnzahl));
 
         mehrRäume = getInput("Sind weitere Räume vorhanden? [J/n]: ", str).lower();
         if mehrRäume in zustimmungsArgumente:
             continue;
         else:
             break;
-    return (raumListe, teilFlächenListe);
+    return teilFlächenListe;
 
 def calculateResult(teilFlächenListe: list = []) -> list:
     gebäudeFläche = 0;
@@ -273,16 +264,16 @@ def main() -> int:
                 return 0;
             case _: dbg();  # Use py/python/python3 MaklerMesser.py with any other argument to run a test run with predefined arrays but no options
 
-    (raumListe, teilFlächenListe) = getRaum();
+    teilFlächenListe = getRaum();
     
     while True:
         clearScr();
         teilFlächenListe = refreshKeys(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
         zahlenEditor = getInput("Wollen Sie die Eingaben anpassen? [J|n|(a zum Ansehen)]: ", str);
         if zahlenEditor in zustimmungsArgumente:
-            (raumListe, teilFlächenListe) = numberEditor(raumListe, teilFlächenListe);
+            teilFlächenListe = numberEditor(teilFlächenListe);
         elif zahlenEditor == "a":
-            numberEditor(raumListe, teilFlächenListe, True);
+            numberEditor(teilFlächenListe, True);
         else:
             break;
 
