@@ -11,14 +11,21 @@ class Raum:
 
 # TeilFläche.teilFläche automatically calculates itself and can be refreshed with refreshKeys(iterable, key: str, refresherKey: str, updaterKey: str);
 class TeilFläche:
-    alternativeTeilFlächenNummer: int = 1;
+    teilFlächenNummer: int = 0;
+    raumNummerKomparator: int = 1;
 
-    def __init__(self, raumNummer: int, teilFlächenNummer: int, teilFlächenLänge: float, teilFlächenBreite: float):
+    def __init__(self, raumNummer: int, teilFlächenLänge: float, teilFlächenBreite: float):
+        self.__class__.teilFlächenNummer += 1;
+        if raumNummer > self.__class__.raumNummerKomparator:
+            self.__class__.teilFlächenNummer = 1;
+
         self.raumNummer = raumNummer;
-        self.teilFlächenNummer = teilFlächenNummer or self.__class__.alternativeTeilFlächenNummer;
+        self.teilFlächenNummer = self.__class__.teilFlächenNummer;
         self.teilFlächenLänge = teilFlächenLänge;
         self.teilFlächenBreite = teilFlächenBreite;
         self.teilFläche = teilFlächenLänge * teilFlächenBreite;
+
+        self.__class__.raumNummerKomparator = raumNummer;
     def __str__(self):
         return str(("Raum:", self.raumNummer, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
 
@@ -27,14 +34,14 @@ zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""];
 dbgRaumListe=[Raum(1), Raum(2), Raum(3)];
 
 dbgTeilFlächenListe=[
-                TeilFläche(1, 1, 1, 1),                 # [0] Room 1, Area 1
-                TeilFläche(1, 2, 2, 2),                 # [1] Room 1, Area 2
-                TeilFläche(2, 1, 3, 3),                 # [2] Room 2, Area 1
-                TeilFläche(2, 2, 4, 4),                 # [3] Room 2, Area 2
-                TeilFläche(2, 3, 5, 5),                 # [4] Room 2, Area 3
-                TeilFläche(3, 1, 6, 6),                 # [5] Room 3, Area 1
-                TeilFläche(3, 2, 7, 7),                 # [6] Room 3, Area 2
-                TeilFläche(3, 3, 8, 8)                  # [7] Room 3, Area 3
+                TeilFläche(1, 1, 1),                 # [0] Room 1, Area 1
+                TeilFläche(1, 2, 2),                 # [1] Room 1, Area 2
+                TeilFläche(2, 3, 3),                 # [2] Room 2, Area 1
+                TeilFläche(2, 4, 4),                 # [3] Room 2, Area 2
+                TeilFläche(2, 5, 5),                 # [4] Room 2, Area 3
+                TeilFläche(3, 6, 6),                 # [5] Room 3, Area 1
+                TeilFläche(3, 7, 7),                 # [6] Room 3, Area 2
+                TeilFläche(3, 8, 8)                  # [7] Room 3, Area 3
                 ];
 
 def clearScr() -> None:
@@ -231,6 +238,10 @@ def main() -> int:
     if (len(sys.argv) > 1):
         match sys.argv[1]:
             case "-dO": dbg(dbgListOnly=False, dbgZimmerWahl=2, dbgTeilFlächenWahl=1, dbgWertWahl="b", dbgNeueLänge=4, dbgNeueBreite=5);  # Use py/python/python3 MaklerMesser.py -dO to run a test run with the following predefined settings
+            case "-dTFL":
+                for item in dbgTeilFlächenListe:
+                    print(item); # Use py/python/python3 MaklerMesser.py -dTFL to print the insides of dbgTeilFlächenListe
+                return 0;
             case _: dbg();  # Use py/python/python3 MaklerMesser.py with any other argument to run a test run with predefined arrays but no options
 
     (raumListe, teilFlächenListe) = getRaum();
