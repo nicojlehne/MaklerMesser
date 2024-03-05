@@ -2,6 +2,8 @@
 # Using '+' instead of ',' to concatenate strings makes Python add the values together,
 # which doesn't work for strings and ints for example. Reduces readability, of course. #TypeError
 
+import time, math
+
 # TeilFläche.teilFläche automatically calculates itself on entry and can be refreshed with refreshArea(iterable, key: str, refresherKey: str, updaterKey: str);
 class TeilFläche:
     teilFlächenNummer: int = 0;
@@ -19,10 +21,10 @@ class TeilFläche:
         self.teilFläche = self.teilFlächenLänge * self.teilFlächenBreite;
 
         self.__class__.raumNummerKomparator = raumNummer;
-    def __str__(self):
+    def __str__(self): # This affects how the object looks when using print() for example
         return str(("Raum:", self.raumNummer, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
 
-zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""];
+zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""]; # makes it easier to check input against confirmation
 
 def clearScr() -> None:
     import os
@@ -90,10 +92,13 @@ def getInput(prompt: str, dataType: any, clear: bool = True) -> any:
             match dataType.__name__: # Implement valid descriptions for different types, or don't, the default case _: handles every unimplemented case
                 case "float":
                     print("Bitte geben Sie eine valide Zahl ein.");
+                    clear = False;
                 case "str":
                     print("Bitte geben Sie valide Symbole ein.");
+                    clear = False;
                 case _:
                     print("Bitte versuchen Sie es erneut.");
+                    clear = False;
 
 # Arguments starting at listOnly can be supplied to test different zones in this function
 # e.g. leaving zimmerWahl None, but setting teilFlächenWahl, would let you enter a zimmerWahl and skip the prompt for teilFlächenWahl
@@ -197,6 +202,25 @@ def calculateResult(teilFlächenListe: list = []) -> list:
     print("Die durchschnittliche Fläche eines Raumes beträgt:", str(gebäudeFläche / (anzahlRäume if anzahlRäume > 0 else 1)) + "m²"); # Don't get confused, this just gets rid of div/0
     return teilFlächenListe;
 
+def convertToDict(anyList: list) -> dict:
+    anyDict: dict = {};
+    for i in range(0, len(anyList), 2):
+        anyDict[anyList[i]] = anyList[i + 1]
+    return anyDict;
+
+def saveAs(teilFlächenListe: list = [], fileType: str = "csv") -> None:
+    outputFile = open("teilFlaechenListe_" + str(math.ceil(time.time())) + "." + fileType, "a");
+    listKeys = teilFlächenListe[0].__dict__.keys();
+    for key in listKeys:
+        outputFile.write(key + ";");
+    outputFile.write("\n");
+    for key in listKeys:
+        print(key);
+        for teilFläche in teilFlächenListe:
+            outputFile.write(str(getattr(teilFläche, key)) + ";");
+        outputFile.write("\n");
+    print("Gespeichert in: " + outputFile.name);
+
 def main() -> int:
     teilFlächenListe = getRaum();
     
@@ -211,6 +235,8 @@ def main() -> int:
             break;
 
     teilFlächenListe = calculateResult(teilFlächenListe);
+    if getInput("Wollen Sie das Ergebnis als CSV-Datei speichern? (J|n): ", str, False) in zustimmungsArgumente:
+        saveAs(teilFlächenListe=teilFlächenListe, fileType="csv");
     return 0;
 
 if __name__ == "__main__":
