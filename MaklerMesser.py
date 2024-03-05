@@ -62,9 +62,9 @@ def getIndividualCount(iterable: list, key: str) -> int:
 
 # This is a bad name as the function only multiplies two keys to set a third.
 # This function is only used to recalculate TeilFläche.teilFläche after creation.
-def refreshKeys(iterable: list, key: str, refresherKey: str, updaterKey: str) -> list:
+def refreshArea(iterable: list, areaKey: str, multiplikand: str, multiplikator: str) -> list:
     for item in iterable:
-        setattr(item, key, getattr(item, refresherKey) * getattr(item, updaterKey))
+        setattr(item, areaKey, getattr(item, multiplikand) * getattr(item, multiplikator))
     return iterable;
 
 # This function would be used to update room designations after a rooms values have been deleted
@@ -106,10 +106,8 @@ def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = N
         for TeilFläche in teilFlächenListe:
             if TeilFläche.raumNummer == i:
                 raumFläche += TeilFläche.teilFläche;
-        print(
-              "Zimmer: [" + str(i) + "]",
-              str(raumFläche) + "m²"
-              );
+        print("Zimmer: [" + str(i) + "]",
+              str(raumFläche) + "m²");
     if listOnly:
         input();
         return;
@@ -187,7 +185,7 @@ def getRaum(teilFlächenListe: list = []) -> list:
 
 def calculateResult(teilFlächenListe: list = []) -> list:
     gebäudeFläche = 0;
-    teilFlächenListe = refreshKeys(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
+    teilFlächenListe = refreshArea(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
     anzahlRäume = getIndividualCount(teilFlächenListe, "raumNummer");
     for i in range(1, anzahlRäume + 1):
         raumFläche = 0;
@@ -204,7 +202,7 @@ def main() -> int:
     teilFlächenListe = getRaum();
     
     while True:
-        teilFlächenListe = refreshKeys(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
+        teilFlächenListe = refreshArea(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
         zahlenEditor = getInput("Wollen Sie die Eingaben anpassen? [J|n|(a zum Ansehen)]: ", str);
         if zahlenEditor in zustimmungsArgumente:
             teilFlächenListe = numberEditor(teilFlächenListe);
