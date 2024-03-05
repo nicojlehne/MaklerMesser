@@ -4,55 +4,94 @@
 
 import sys;
 
-zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""];
-
+# This class is pretty much obsolete after adding TeilFläche and will be removed
 class Raum:
     def __init__(self, raumZahl: int):
-        self.raumZahl = raumZahl;
+        self.raumZahl = raumZahl; # Same value as TeilFläche.raumNummer
 
+# TeilFläche.teilFläche automatically calculates itself and can be refreshed with refreshKeys(iterable, key: str, refresherKey: str, updaterKey: str);
 class TeilFläche:
-    def __init__(self, raumNummer: int, teilFlächenNummer: int, teilFlächenLänge: float, teilFlächenBreite: float, teilFläche: float = 0):
+    alternativeTeilFlächenNummer: int = 1;
+
+    def __init__(self, raumNummer: int, teilFlächenNummer: int, teilFlächenLänge: float, teilFlächenBreite: float):
         self.raumNummer = raumNummer;
-        self.teilFlächenNummer = teilFlächenNummer;
+        self.teilFlächenNummer = teilFlächenNummer or self.__class__.alternativeTeilFlächenNummer;
         self.teilFlächenLänge = teilFlächenLänge;
         self.teilFlächenBreite = teilFlächenBreite;
         self.teilFläche = teilFlächenLänge * teilFlächenBreite;
     def __str__(self):
         return str(("Raum:", self.raumNummer, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
 
-def clearScr():
-    import os
-    os.system("cls||clear");
+zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""];
 
-def getStartIndex(iterable, key, value):
+dbgRaumListe=[Raum(1), Raum(2), Raum(3)];
+
+dbgTeilFlächenListe=[
+                TeilFläche(1, 1, 1, 1),                 # [0] Room 1, Area 1
+                TeilFläche(1, 2, 2, 2),                 # [1] Room 1, Area 2
+                TeilFläche(2, 1, 3, 3),                 # [2] Room 2, Area 1
+                TeilFläche(2, 2, 4, 4),                 # [3] Room 2, Area 2
+                TeilFläche(2, 3, 5, 5),                 # [4] Room 2, Area 3
+                TeilFläche(3, 1, 6, 6),                 # [5] Room 3, Area 1
+                TeilFläche(3, 2, 7, 7),                 # [6] Room 3, Area 2
+                TeilFläche(3, 3, 8, 8)                  # [7] Room 3, Area 3
+                ];
+
+def clearScr() -> None:
+    import os
+    os.system("cls||clear"); # Simplistic method to clear the console, if cls doesn't work run clear, and vice versa.
+
+# This function returns the index of the first occurrence of a key with specific value in an array of objects
+# 
+# array[];
+# i = 1; j = 0;
+#
+# for i < 10:
+#     array[j] = Object(a: i, b: i, c: i, d: i, e: i, f: i);
+#     i *= 2; j += 1;
+#
+# getStartIndex(array, "a", 8);
+#
+# The index will be 3, in this case as the third Object in this array will have the values
+# array[1] = Object(a: 4, b: 4, c: 4, d: 4, e: 4, f: 4);
+# array[2] = Object(a: 8, b: 8, c: 8, d: 8, e: 8, f: 8);
+def getStartIndex(iterable: list, key: str, value: any) -> int:
     for item in iterable:
         if getattr(item, key) == value:
             return iterable.index(item);
 
-def getCount(iterable, key, value):
+# Returns the amount of keys with a specific value in an array of objects
+def getCount(iterable: list, key: str, value: any) -> int:
     count = 0;
     for item in iterable:
         if getattr(item, key) == value:
             count += 1;
     return count;
 
-def refreshKeys(iterable, key: str, refresherKey: str, updaterKey: str):
+# This is a bad name as the function only multiplies two keys to set a third.
+# This function is only used to recalculate TeilFläche.teilFläche after creation.
+def refreshKeys(iterable: list, key: str, refresherKey: str, updaterKey: str) -> list:
     for item in iterable:
         setattr(item, key, getattr(item, refresherKey) * getattr(item, updaterKey))
     return iterable;
 
-def updateRoomDesignations(iterable):
+# This function would be used to update room designations after a rooms values have been deleted
+# TODO: get index missing value and only decrease above rooms designations
+def updateRoomDesignations(iterable: list) -> list:
     for item in iterable:
         setattr(item, "raumZahl", getattr(item, "raumZahl") - 1);
     return iterable;
 
-def getInput(prompt: str, dataType):
+# Safely gets input of any type
+# getInput("Enter your age", int); would try for int(response)
+# getInput("Enter your age", str); would try for str(response)
+def getInput(prompt: str, dataType: any) -> any:
     while True:
         response = input(prompt);
         try:
             return dataType(response);  # This equates to int(response) if dataType transferred is int. This works with all types theoretically.
         except ValueError:
-            match dataType.__name__:
+            match dataType.__name__: # Implement valid descriptions for different types, or don't, the default case _: handles every unimplemented case
                 case "float":
                     print("Bitte geben Sie eine valide Zahl ein.");
                 case "str":
@@ -60,7 +99,10 @@ def getInput(prompt: str, dataType):
                 case _:
                     print("Bitte versuchen Sie es erneut.");
 
-def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = False, zimmerWahl = None, teilFlächenWahl = None, wertWahl = None, neueLänge = None, neueBreite = None):
+# Arguments starting at listOnly can be supplied to test different zones in this function
+# e.g. leaving zimmerWahl None, but setting teilFlächenWahl, would let you enter a zimmerWahl and skip the prompt for teilFlächenWahl
+# Use explicitly named arguments for easier usage
+def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = False, zimmerWahl = None, teilFlächenWahl = None, wertWahl = None, neueLänge = None, neueBreite = None) -> tuple:
     for Zimmer in raumListe:
         raumFläche = 0;
         for TeilFläche in teilFlächenListe:
@@ -126,7 +168,7 @@ def numberEditor(raumListe: list, teilFlächenListe: list, listOnly: bool = Fals
     
     return (raumListe, teilFlächenListe);
 
-def getRaum(raumListe: list = [], teilFlächenListe: list = []):
+def getRaum(raumListe: list = [], teilFlächenListe: list = []) -> tuple:
     raumAnzahl = 0;
 
     while True:
@@ -155,45 +197,41 @@ def getRaum(raumListe: list = [], teilFlächenListe: list = []):
             break;
     return (raumListe, teilFlächenListe);
 
-def main():
+def calculateResult(raumListe: list = [], teilFlächenListe: list = []) -> tuple:
     gebäudeFläche = 0;
-    if (len(sys.argv) > 1):
-        if (sys.argv[1] == "-d"): # Use py/python/python3 MaklerMesser.py -d to run a test run with the following predefined settings
-            clearScr();
-            (raumListe, teilFlächenListe) = numberEditor(raumListe=[
-                Raum(1),
-                Raum(2),
-                Raum(3)
-                ], teilFlächenListe=[
-                TeilFläche(1, 1, 1, 1),                 # [0] Room 1, Area 1
-                TeilFläche(1, 2, 2, 2),                 # [1] Room 1, Area 2
-                TeilFläche(2, 1, 3, 3),                 # [2] Room 2, Area 1
-                TeilFläche(2, 2, 4, 4),                 # [3] Room 2, Area 2
-                TeilFläche(2, 3, 5, 5),                 # [4] Room 2, Area 3
-                TeilFläche(3, 1, 6, 6),                 # [5] Room 3, Area 1
-                TeilFläche(3, 2, 7, 7),                 # [6] Room 3, Area 2
-                TeilFläche(3, 3, 8, 8)                  # [7] Room 3, Area 3
-                ],
-                listOnly=False,
-                zimmerWahl=2,
-                #teilFlächenWahl=2,
-                teilFlächenWahl=1,
-                wertWahl="b",
-                neueLänge=4,
-                neueBreite=5
-                );
+    teilFlächenListe = refreshKeys(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
+    for Zimmer in raumListe:
+        raumFläche = 0;
+        for TeilFlaeche in teilFlächenListe:
+            if TeilFlaeche.raumNummer == Zimmer.raumZahl:
+                raumFläche += TeilFlaeche.teilFläche;
+        print("Die Fläche für Raum", Zimmer.raumZahl, "beträgt:", str(raumFläche) + "m²");
+        gebäudeFläche += raumFläche;
+    print("Die gesamte Fläche des Gebäudes beträgt:", str(gebäudeFläche) + "m²");
+    print("Die durchschnittliche Fläche eines Raumes beträgt:", str(gebäudeFläche / (len(raumListe) if len(raumListe) > 0 else 1)) + "m²");
+    return (raumListe, teilFlächenListe);
 
-            teilFlächenListe = refreshKeys(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
-            for Zimmer in raumListe:
-                raumFläche = 0;
-                for TeilFlaeche in teilFlächenListe:
-                    if TeilFlaeche.raumNummer == Zimmer.raumZahl:
-                        raumFläche += TeilFlaeche.teilFläche;
-                print("Die Fläche für Raum", Zimmer.raumZahl, "beträgt:", str(raumFläche) + "m²");
-                gebäudeFläche += raumFläche;
-            print("Die gesamte Fläche des Gebäudes beträgt:", str(gebäudeFläche) + "m²");
-            print("Der Durchschnitt der Fläche des Gebäudes beträgt:", str(gebäudeFläche / (len(raumListe) if len(raumListe) > 0 else 1)) + "m²");
-            return;
+def dbg(dbgListOnly = False, dbgZimmerWahl = None, dbgTeilFlächenWahl = None, dbgWertWahl = None, dbgNeueLänge = None, dbgNeueBreite = None) -> tuple:
+    clearScr();
+    (raumListe, teilFlächenListe) = numberEditor(
+        raumListe=dbgRaumListe,                         # Predefined at top, CTRL+Click to find.
+        teilFlächenListe=dbgTeilFlächenListe,           # Predefined at top, CTRL+Click to find.
+        listOnly=dbgListOnly,
+        zimmerWahl=dbgZimmerWahl,
+        teilFlächenWahl=dbgTeilFlächenWahl,
+        wertWahl=dbgWertWahl,
+        neueLänge=dbgNeueLänge,
+        neueBreite=dbgNeueBreite
+        );
+
+    (raumListe, teilFlächenListe) = calculateResult(raumListe, teilFlächenListe);
+    exit(0);
+
+def main() -> int:
+    if (len(sys.argv) > 1):
+        match sys.argv[1]:
+            case "-dO": dbg(dbgListOnly=False, dbgZimmerWahl=2, dbgTeilFlächenWahl=1, dbgWertWahl="b", dbgNeueLänge=4, dbgNeueBreite=5);  # Use py/python/python3 MaklerMesser.py -dO to run a test run with the following predefined settings
+            case _: dbg();  # Use py/python/python3 MaklerMesser.py with any other argument to run a test run with predefined arrays but no options
 
     (raumListe, teilFlächenListe) = getRaum();
     
@@ -208,15 +246,8 @@ def main():
         else:
             break;
 
-    for Zimmer in raumListe:
-        raumFläche = 0;
-        for TeilFlaeche in teilFlächenListe:
-            if TeilFlaeche.raumNummer == Zimmer.raumZahl:
-                raumFläche += TeilFlaeche.teilFläche;
-        print("Die Fläche für Raum", Zimmer.raumZahl, "beträgt:", str(raumFläche) + "m²");
-        gebäudeFläche += raumFläche;
-    print("Die gesamte Fläche des Gebäudes beträgt:", str(gebäudeFläche) + "m²");
-    print("Der Durchschnitt der Fläche des Gebäudes beträgt:", str(gebäudeFläche / (len(raumListe) if len(raumListe) > 0 else 1)) + "m²");
+    (raumListe, teilFlächenListe) = calculateResult(raumListe, teilFlächenListe);
+    return 0;
 
 if __name__ == "__main__":
     main();
