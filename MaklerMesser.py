@@ -165,7 +165,7 @@ def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = N
                 continue;
     return teilFlächenListe;
 
-def getRaum(teilFlächenListe: list = []) -> tuple:
+def getRaum(teilFlächenListe: list = []) -> list:
     raumAnzahl = 0;
 
     while True:
