@@ -68,7 +68,6 @@ def refreshKeys(iterable: list, key: str, refresherKey: str, updaterKey: str) ->
     return iterable;
 
 # This function would be used to update room designations after a rooms values have been deleted
-# TODO: get index missing value and only decrease above rooms designations
 def updateRoomDesignations(iterable: list, deletedRoom: int) -> list:
     for item in iterable:
         if getattr(item, "raumNummer") == deletedRoom:    # Check if room actually missing and immediately return if that's the case
