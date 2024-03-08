@@ -208,9 +208,8 @@ def saveAs(teilFlächenListe: list = [], fileType: str = "csv") -> None:
     for key in listKeys:
         outputFile.write(key + ";");
     outputFile.write("\n");
-    for key in listKeys:
-        print(key);
-        for teilFläche in teilFlächenListe:
+    for teilFläche in teilFlächenListe:
+        for key in listKeys:
             outputFile.write(str(getattr(teilFläche, key)) + ";");
         outputFile.write("\n");
     print("Gespeichert in: " + outputFile.name);
