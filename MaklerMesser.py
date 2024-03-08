@@ -202,12 +202,6 @@ def calculateResult(teilFlächenListe: list = []) -> list:
     print("Die durchschnittliche Fläche eines Raumes beträgt:", str(gebäudeFläche / (anzahlRäume if anzahlRäume > 0 else 1)) + "m²"); # Don't get confused, this just gets rid of div/0
     return teilFlächenListe;
 
-def convertToDict(anyList: list) -> dict:
-    anyDict: dict = {};
-    for i in range(0, len(anyList), 2):
-        anyDict[anyList[i]] = anyList[i + 1]
-    return anyDict;
-
 def saveAs(teilFlächenListe: list = [], fileType: str = "csv") -> None:
     outputFile = open("teilFlaechenListe_" + str(math.ceil(time.time())) + "." + fileType, "a");
     listKeys = teilFlächenListe[0].__dict__.keys();
