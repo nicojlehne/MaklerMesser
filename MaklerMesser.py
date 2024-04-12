@@ -8,21 +8,25 @@ import time, math
 class TeilFläche:
     teilFlächenNummer: int = 0;
     raumNummerKomparator: int = 1;
+    raumName: str = None;
 
     def __init__(self, raumNummer: int):
         self.__class__.teilFlächenNummer += 1;
         if raumNummer > self.__class__.raumNummerKomparator:
             self.__class__.teilFlächenNummer = 1;
+            self.__class__.raumName = None;
 
         self.raumNummer: int = raumNummer;
+        self.raumName = self.__class__.raumName if self.__class__.raumName else getInput("Geben Sie den Namen des Raumes ein: ", str);
         self.teilFlächenNummer: int = self.__class__.teilFlächenNummer;
         self.teilFlächenLänge: float = getInput("Geben Sie die Länge des Raumes oder der Teilfläche in m² ein: ", float);
         self.teilFlächenBreite: float = getInput("Geben Sie die Breite des Raumes oder der Teilfläche in m² ein: ", float);
         self.teilFläche: float = self.teilFlächenLänge * self.teilFlächenBreite;
 
+        self.__class__.raumName = self.raumName;
         self.__class__.raumNummerKomparator = raumNummer;
     def __str__(self): # This affects how the object looks when using print() for example
-        return str(("Raum:", self.raumNummer, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
+        return str(("Raum:", self.raumNummer, self.raumName, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
 
 zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""]; # makes it easier to check input against confirmation
 
@@ -187,7 +191,7 @@ def calculateResult(teilFlächenListe: list = []) -> list:
         for teilFläche in teilFlächenListe:
             if teilFläche.raumNummer == i:
                 raumFläche += teilFläche.teilFläche;
-        print("Die Fläche für Raum", i, "beträgt:", str(raumFläche) + "m²");
+        print("Die Fläche für Raum " + str(teilFlächenListe[i].raumName) + "(" + str(i) + ")", "beträgt:", str(raumFläche) + "m²");
         gebäudeFläche += raumFläche;
     print("Die gesamte Fläche des Gebäudes beträgt:", str(gebäudeFläche) + "m²");
     print("Die durchschnittliche Fläche eines Raumes beträgt:", str(gebäudeFläche / (anzahlRäume if anzahlRäume > 0 else 1)) + "m²"); # Don't get confused, this just gets rid of div/0
