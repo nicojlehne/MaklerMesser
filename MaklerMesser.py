@@ -2,7 +2,22 @@
 # Using '+' instead of ',' to concatenate strings makes Python add the values together,
 # which doesn't work for strings and ints for example. Reduces readability, of course. #TypeError
 
-import time, math
+import time, math, pathlib
+
+def isLinux():
+    from sys import platform
+    if platform == "linux" or platform == "linux2" or platform == "cygwin":
+        return 1;
+    elif platform == "win32":
+        return 0;
+    else:
+        return 666;
+
+isLinux: int = int(isLinux())
+if isLinux:
+    from getch import getch # getch module has to be installed manually with pip (ONLY: Linux)
+else:
+    import msvcrt # Windows supporting implementation of getch
 
 # TeilFläche.teilFläche automatically calculates itself on entry and can be refreshed with refreshArea(iterable, key: str, refresherKey: str, updaterKey: str);
 class TeilFläche:
@@ -29,7 +44,7 @@ class TeilFläche:
         return str(("Raum:", self.raumNummer, self.raumName, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
 
 class ANSIString:
-    def __init__(self, text, foregroundColor = "", backgroundColor = "", mode = ""):
+    def __init__(self, text, foregroundColor = None, backgroundColor = None, mode = None):
         self.text = text;
         self.foregroundColor = foregroundColor;
         self.backgroundColor = backgroundColor;
@@ -96,6 +111,15 @@ def updateRoomDesignations(iterable: list, deletedRoom: int) -> list:
         if getattr(item, "raumNummer") > deletedRoom:
             setattr(item, "raumNummer", getattr(item, "raumNummer") - 1);
     return iterable;
+
+def nuGetch():
+    match isLinux:
+        case 1:
+            return getch();
+        case 0:
+            return msvcrt.getch();
+        case _:
+            raise TypeError("Unsupported OS", isLinux);
 
 # Safely gets input of any type
 # getInput("Enter your age", int); would try for int(response)
@@ -224,14 +248,41 @@ def saveAs(teilFlächenListe: list = [], fileType: str = "csv") -> None:
         outputFile.write("\n");
     print("Gespeichert in: " + outputFile.name);
 
-def listDirectory() -> list:
-    return list;
+def listDirectory(path = ".") -> list:
+    return pathlib.Path(path).glob("*");
 
-def walkDirectory():
-    return;
+def walkDirectory(files = []):
+    fileChosen = None;
+    selectedLine = 0;
+    while not fileChosen:
+        files = files or listDirectory();
+        key = None;
+        print("E");
+        for index, file in enumerate(files):
+            print(index);
+            if index == selectedLine:
+                print(f"{ANSIString(file, 30, 47)}");
+            else:
+                print(file);
+        file = None
+        while key == None:
+            key = ord(nuGetch());
+            if key == 224:
+                key = ord(nuGetch());
+                match key:
+                    case 72:
+                        print("HOCH");
+                        selectedLine += 1;
+                        print(selectedLine);
+                        break;
+                    case 80:
+                        print("RUNTER")
+                        selectedLine -= 1;
+                        print(selectedLine);
+                        break;
 
 def main() -> int:
-    print(f"{ANSIString('HEH', 30, 47)}");
+    walkDirectory();
     return
     teilFlächenListe: list = getTeilFläche();
     
