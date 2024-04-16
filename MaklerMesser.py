@@ -35,9 +35,13 @@ class ANSIString:
         self.backgroundColor = backgroundColor;
         self.mode =  mode;
     def __str__(self):
-        import os
-        os.system("color");
-        return f"\\033[{str(self.foregroundColor)}{['', ';'][self.foregroundColor != '']}{str(self.backgroundColor)}{['', ';'][self.backgroundColor != '']}{self.mode}m{self.text}\\033[0m"
+        ansiSequence = f"\033[{str(self.foregroundColor)}";
+        if self.backgroundColor:
+            ansiSequence += f";{self.backgroundColor}";
+        if self.mode:
+            ansiSequence += f";{self.mode}";
+        ansiSequence += "m";
+        return f"{ansiSequence}{self.text}\033[0m"
 
 zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""]; # makes it easier to check input against confirmation
 
