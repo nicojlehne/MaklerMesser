@@ -28,6 +28,17 @@ class TeilFläche:
     def __str__(self): # This affects how the object looks when using print() for example
         return str(("Raum:", self.raumNummer, self.raumName, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
 
+class ANSIString:
+    def __init__(self, text, foregroundColor = "", backgroundColor = "", mode = ""):
+        self.text = text;
+        self.foregroundColor = foregroundColor;
+        self.backgroundColor = backgroundColor;
+        self.mode =  mode;
+    def __str__(self):
+        import os
+        os.system("color");
+        return f"\\033[{str(self.foregroundColor)}{['', ';'][self.foregroundColor != '']}{str(self.backgroundColor)}{['', ';'][self.backgroundColor != '']}{self.mode}m{self.text}\\033[0m"
+
 zustimmungsArgumente = ["ja", "j", "yes", "y", "1", ""]; # makes it easier to check input against confirmation
 
 def clearScr() -> None:
@@ -106,7 +117,7 @@ def getInput(prompt: str, dataType: any, clear: bool = True) -> any:
 # e.g. leaving zimmerWahl None, but setting teilFlächenWahl, would let you enter a zimmerWahl and skip the prompt for teilFlächenWahl
 # Use explicitly named arguments for easier usage
 def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = None, teilFlächenWahl = None, wertWahl = None, neueLänge = None, neueBreite = None) -> list:
-    anzahlRäume: int = getIndividualCount(teilFlächenListe, "raumNummer");
+    anzahlRäume: int = getIndividualCount(teilFlächenListe, key="raumNummer");
     for i in range(1, anzahlRäume + 1):
         raumFläche: float = 0;
         for TeilFläche in teilFlächenListe:
@@ -118,10 +129,10 @@ def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = N
         input();
         return;
 
-    zimmerWahl: int = zimmerWahl or getInput("Welches Zimmer wollen Sie bearbeiten?: ", int, False);
+    zimmerWahl: int = zimmerWahl or getInput("Welches Zimmer wollen Sie bearbeiten?: ", int, clear=False);
 
     j: int = 0;
-    startingPoint: int = getStartIndex(teilFlächenListe, "raumNummer", zimmerWahl);
+    startingPoint: int = getStartIndex(teilFlächenListe, key="raumNummer", value=zimmerWahl);
     for TeilFläche in teilFlächenListe:
         if TeilFläche.raumNummer == zimmerWahl:
             j += 1;
@@ -133,7 +144,7 @@ def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = N
                 );
     
     while True:
-        teilFlächenAuswahl: int = teilFlächenWahl or getInput("Welche dieser Teilflächen wollen Sie bearbeiten?: ", int, False);
+        teilFlächenAuswahl: int = teilFlächenWahl or getInput("Welche dieser Teilflächen wollen Sie bearbeiten?: ", int, clear=False);
         teilFlächenWahl: int = teilFlächenAuswahl + startingPoint - 1;
         if teilFlächenWahl >= j + startingPoint or teilFlächenWahl < startingPoint:
             print("Teilfläche ist nicht in Liste.");
@@ -147,16 +158,16 @@ def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = N
           "[L]änge:", str(teilFlächenListe[teilFlächenWahl].teilFlächenLänge), "[B]reite:", str(teilFlächenListe[teilFlächenWahl].teilFlächenBreite));
 
     while True:
-        match wertWahl or getInput("Welchen dieser Werte wollen Sie bearbeiten? [l|b|(d zum Löschen des Eintrags)]: ", str, False).lower():
+        match wertWahl or getInput("Welchen dieser Werte wollen Sie bearbeiten? [l|b|(d zum Löschen des Eintrags)]: ", str, clear=False).lower():
             case "l":
-                teilFlächenListe[teilFlächenWahl].teilFlächenLänge = neueLänge or getInput("Welche Länge wollen Sie statt " + str(teilFlächenListe[teilFlächenWahl].teilFlächenLänge) + " eintragen?: ", float, False);
+                teilFlächenListe[teilFlächenWahl].teilFlächenLänge = neueLänge or getInput("Welche Länge wollen Sie statt " + str(teilFlächenListe[teilFlächenWahl].teilFlächenLänge) + " eintragen?: ", float, clear=False);
                 break;
             case "b":
-                teilFlächenListe[teilFlächenWahl].teilFlächenBreite = neueBreite or getInput("Welchen Breite wollen Sie statt " + str(teilFlächenListe[teilFlächenWahl].teilFlächenBreite) + " eintragen?: ", float, False);
+                teilFlächenListe[teilFlächenWahl].teilFlächenBreite = neueBreite or getInput("Welchen Breite wollen Sie statt " + str(teilFlächenListe[teilFlächenWahl].teilFlächenBreite) + " eintragen?: ", float, clear=False);
                 break;
             case "d":
                 teilFlächenListe.pop(teilFlächenWahl);
-                updateRoomDesignations(teilFlächenListe, zimmerWahl); # This does nothing if all rooms still have at least one partial area
+                updateRoomDesignations(teilFlächenListe, deletedRoom=zimmerWahl); # This does nothing if all rooms still have at least one partial area
                 break;
             case "n":
                 break;
@@ -184,8 +195,8 @@ def getTeilFläche(teilFlächenListe: list = []) -> list:
 
 def calculateResult(teilFlächenListe: list = []) -> list:
     gebäudeFläche: float = 0;
-    teilFlächenListe = refreshArea(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
-    anzahlRäume: int = getIndividualCount(teilFlächenListe, "raumNummer");
+    teilFlächenListe = refreshArea(teilFlächenListe, areaKey="teilFläche", multiplikand="teilFlächenLänge", multiplikator="teilFlächenBreite");
+    anzahlRäume: int = getIndividualCount(teilFlächenListe, key="raumNummer");
     for i in range(1, anzahlRäume + 1):
         raumFläche: float = 0;
         for teilFläche in teilFlächenListe:
@@ -209,7 +220,15 @@ def saveAs(teilFlächenListe: list = [], fileType: str = "csv") -> None:
         outputFile.write("\n");
     print("Gespeichert in: " + outputFile.name);
 
+def listDirectory() -> list:
+    return list;
+
+def walkDirectory():
+    return;
+
 def main() -> int:
+    print(f"{ANSIString('HEH', 30, 47)}");
+    return
     teilFlächenListe: list = getTeilFläche();
     
     while True:
@@ -218,12 +237,12 @@ def main() -> int:
         if zahlenEditor in zustimmungsArgumente:
             teilFlächenListe = numberEditor(teilFlächenListe);
         elif zahlenEditor == "a":
-            numberEditor(teilFlächenListe, True);
+            numberEditor(teilFlächenListe, listOnly=True);
         else:
             break;
 
     teilFlächenListe = calculateResult(teilFlächenListe);
-    if getInput("Wollen Sie das Ergebnis als CSV-Datei speichern? (J|n): ", str, False) in zustimmungsArgumente:
+    if getInput("Wollen Sie das Ergebnis als CSV-Datei speichern? (J|n): ", str, clear=False) in zustimmungsArgumente:
         saveAs(teilFlächenListe=teilFlächenListe, fileType="csv");
     return 0;
 
