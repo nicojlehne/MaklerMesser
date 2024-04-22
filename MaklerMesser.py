@@ -112,7 +112,9 @@ def updateRoomDesignations(iterable: list, deletedRoom: int) -> list:
             setattr(item, "raumNummer", getattr(item, "raumNummer") - 1);
     return iterable;
 
-def nuGetch():
+def nuGetch(prompt):
+    if prompt:
+        print(prompt);
     match isLinux:
         case 1:
             return getch();
@@ -124,11 +126,14 @@ def nuGetch():
 # Safely gets input of any type
 # getInput("Enter your age", int); would try for int(response)
 # getInput("Enter your age", str); would try for str(response)
-def getInput(prompt: str, dataType: any, clear: bool = True) -> any:
+def getInput(prompt: str, dataType: any, getch = False, clear: bool = True) -> any:
     while True:
         if clear:
             clearScr();
-        response = input(prompt);
+        if getch:
+            response = nuGetch(prompt);
+        else:
+            response = input(prompt);
         try:
             return dataType(response);  # This equates to int(response) if dataType transferred is int. This works with all types theoretically.
         except ValueError:
@@ -186,7 +191,7 @@ def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = N
           "[L]änge:", str(teilFlächenListe[teilFlächenWahl].teilFlächenLänge), "[B]reite:", str(teilFlächenListe[teilFlächenWahl].teilFlächenBreite));
 
     while True:
-        match wertWahl or getInput("Welchen dieser Werte wollen Sie bearbeiten? [l|b|(d zum Löschen des Eintrags)]: ", str, clear=False).lower():
+        match wertWahl or getInput("Welchen dieser Werte wollen Sie bearbeiten? [l|b|(d zum Löschen des Eintrags)]: ", str, getch=True, clear=False).lower():
             case "l":
                 teilFlächenListe[teilFlächenWahl].teilFlächenLänge = neueLänge or getInput("Welche Länge wollen Sie statt " + str(teilFlächenListe[teilFlächenWahl].teilFlächenLänge) + " eintragen?: ", float, clear=False);
                 break;
@@ -211,11 +216,11 @@ def getTeilFläche(teilFlächenListe: list = []) -> list:
         raumAnzahl += 1;
         while True:
             teilFlächenListe.append(TeilFläche(raumAnzahl));
-            if getInput("Sind weitere Teilflächen vorhanden? [J/n]: ", str).lower() in zustimmungsArgumente:
+            if getInput("Sind weitere Teilflächen vorhanden? [J/n]: ", str, getch=True).lower() in zustimmungsArgumente:
                 continue;
             else:
                 break;
-        if getInput("Sind weitere Räume vorhanden? [J/n]: ", str).lower() in zustimmungsArgumente:
+        if getInput("Sind weitere Räume vorhanden? [J/n]: ", str, getch=True).lower() in zustimmungsArgumente:
             continue;
         else:
             break;
@@ -237,6 +242,9 @@ def calculateResult(teilFlächenListe: list = []) -> list:
     return teilFlächenListe;
 
 def saveAs(teilFlächenListe: list = [], fileType: str = "csv") -> None:
+    if len(teilFlächenListe) <= 0:
+        print("Couldn't save succesfully, please try again.");
+        return
     outputFile = open("teilFlaechenListe_" + str(math.ceil(time.time())) + "." + fileType, "a");
     listKeys = teilFlächenListe[0].__dict__.keys();
     for key in listKeys:
@@ -309,14 +317,11 @@ def walkDirectory(files = [], mode = "r"):
                 break;
 
 def main() -> int:
-    file = walkDirectory();
-    print(file.read());
-    return;
     teilFlächenListe: list = getTeilFläche();
     
     while True:
         teilFlächenListe = refreshArea(teilFlächenListe, "teilFläche", "teilFlächenLänge", "teilFlächenBreite");
-        zahlenEditor: str = getInput("Wollen Sie die Eingaben anpassen? [J|n|(a zum Ansehen)]: ", str);
+        zahlenEditor: str = getInput("Wollen Sie die Eingaben anpassen? [J|n|(a zum Ansehen)]: ", str, getch=True);
         if zahlenEditor in zustimmungsArgumente:
             teilFlächenListe = numberEditor(teilFlächenListe);
         elif zahlenEditor == "a":
@@ -325,7 +330,7 @@ def main() -> int:
             break;
 
     teilFlächenListe = calculateResult(teilFlächenListe);
-    if getInput("Wollen Sie das Ergebnis als CSV-Datei speichern? (J|n): ", str, clear=False) in zustimmungsArgumente:
+    if getInput("Wollen Sie das Ergebnis als CSV-Datei speichern? (J|n): ", str, getch=True, clear=False) in zustimmungsArgumente:
         saveAs(teilFlächenListe=teilFlächenListe, fileType="csv");
     return 0;
 
