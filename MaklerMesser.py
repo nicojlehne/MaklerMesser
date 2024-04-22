@@ -248,42 +248,70 @@ def saveAs(teilFlächenListe: list = [], fileType: str = "csv") -> None:
         outputFile.write("\n");
     print("Gespeichert in: " + outputFile.name);
 
+def importFile(file) -> list:
+    outputFile = open(file, "r");
+
 def listDirectory(path = ".") -> list:
     return pathlib.Path(path).glob("*");
 
-def walkDirectory(files = []):
+def walkDirectory(files = [], mode = "r"):
     fileChosen = None;
     selectedLine = 0;
     while not fileChosen:
-        files = files or listDirectory();
+        clearScr();
         key = None;
-        print("E");
+        files = listDirectory();
         for index, file in enumerate(files):
-            print(index);
             if index == selectedLine:
                 print(f"{ANSIString(file, 30, 47)}");
             else:
                 print(file);
-        file = None
+        files = listDirectory();
         while key == None:
             key = ord(nuGetch());
             if key == 224:
                 key = ord(nuGetch());
                 match key:
-                    case 72:
-                        print("HOCH");
+                    case 65:
+                        selectedLine -= 1;
+                        break;
+                    case 66:
                         selectedLine += 1;
-                        print(selectedLine);
+                        break;
+                    case 72:
+                        selectedLine -= 1;
                         break;
                     case 80:
-                        print("RUNTER")
-                        selectedLine -= 1;
-                        print(selectedLine);
+                        selectedLine += 1;
                         break;
+                    case _:
+                        break;
+            elif key == 27:
+                key = ord(nuGetch());
+                if key == 91:
+                    key = ord(nuGetch());
+                    match key:
+                        case 65:
+                            if selectedLine - 1 < 0:
+                                break;
+                            selectedLine -= 1;
+                            break;
+                        case 66:
+                            if selectedLine + 1 > index:
+                                break;
+                            selectedLine += 1;
+                            break;                    
+                break;
+            elif key == 10:
+                return open(list(files)[selectedLine], mode);
+            else:
+                key = None;
+                break;
 
 def main() -> int:
-    walkDirectory();
-    return
+    file = walkDirectory();
+    print(file.read());
+    return;
     teilFlächenListe: list = getTeilFläche();
     
     while True:
