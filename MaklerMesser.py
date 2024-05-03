@@ -22,26 +22,36 @@ else:
 # TeilFläche.teilFläche automatically calculates itself on entry and can be refreshed with refreshArea(iterable, key: str, refresherKey: str, updaterKey: str);
 class TeilFläche:
     teilFlächenNummer: int = 0;
+    gebäudeNummerKomparator: int = 1;
     raumNummerKomparator: int = 1;
     raumName: str = None;
+    gebäudeName: str = None;
 
-    def __init__(self, raumNummer: int):
+    def __init__(self, gebäudeNummer: int, raumNummer: int):
         self.__class__.teilFlächenNummer += 1;
         if raumNummer > self.__class__.raumNummerKomparator:
             self.__class__.teilFlächenNummer = 1;
             self.__class__.raumName = None;
+        if gebäudeNummer > self.__class__.gebäudeNummerKomparator:
+            self.__class__.raumNummerKomparator = 1;
+            self.__class__.teilFlächenNummer = 1;
+            self.__class__.gebäudeName = None;
 
+        self.gebäudeNummer: int = gebäudeNummer;
+        self.gebäudeName: str = self.__class__.gebäudeName if self.gebäudeName else getInput("Geben Sie den Namen des Gebäudes ein: ", str);
         self.raumNummer: int = raumNummer;
-        self.raumName = self.__class__.raumName if self.__class__.raumName else getInput("Geben Sie den Namen des Raumes ein: ", str);
+        self.raumName: str = self.__class__.raumName if self.__class__.raumName else getInput("Geben Sie den Namen des Raumes ein: ", str);
         self.teilFlächenNummer: int = self.__class__.teilFlächenNummer;
         self.teilFlächenLänge: float = getInput("Geben Sie die Länge des Raumes oder der Teilfläche in m² ein: ", float);
         self.teilFlächenBreite: float = getInput("Geben Sie die Breite des Raumes oder der Teilfläche in m² ein: ", float);
         self.teilFläche: float = self.teilFlächenLänge * self.teilFlächenBreite;
 
+        self.__class__.gebäudeName = self.gebäudeName;
+        self.__class__.gebäudeNummerKomparator = gebäudeNummer;
         self.__class__.raumName = self.raumName;
         self.__class__.raumNummerKomparator = raumNummer;
     def __str__(self): # This affects how the object looks when using print() for example
-        return str(("Raum:", self.raumNummer, self.raumName, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
+        return str(("Gebäude: ", self.gebäudeNummer, self.gebäudename, "Raum:", self.raumNummer, self.raumName, "Teilfläche:", self.teilFlächenNummer, "Fläche der Teilfläche:", self.teilFläche, "Länge:", self.teilFlächenLänge, "Breite:", self.teilFlächenBreite));
 
 class ANSIString:
     def __init__(self, text, foregroundColor = None, backgroundColor = None, mode = None):
@@ -211,16 +221,22 @@ def numberEditor(teilFlächenListe: list, listOnly: bool = False, zimmerWahl = N
 
 def getTeilFläche(teilFlächenListe: list = []) -> list:
     raumAnzahl: int = 0;
-
+    gebäudeAnzahl: int = 0;
     while True:
-        raumAnzahl += 1;
+        gebäudeAnzahl += 1;
         while True:
-            teilFlächenListe.append(TeilFläche(raumAnzahl));
-            if getInput("Sind weitere Teilflächen vorhanden? [J/n]: ", str, getch=True).lower() in zustimmungsArgumente:
+            raumAnzahl += 1;
+            while True:
+                teilFlächenListe.append(TeilFläche(gebäudeAnzahl, raumAnzahl));
+                if getInput("Sind weitere Teilflächen vorhanden? [J/N]: ", str, getch=True).lower() in zustimmungsArgumente:
+                    continue;
+                else:
+                    break;
+            if getInput("Sind weitere Räume vorhanden? [J/N]: ", str, getch=True).lower() in zustimmungsArgumente:
                 continue;
             else:
                 break;
-        if getInput("Sind weitere Räume vorhanden? [J/n]: ", str, getch=True).lower() in zustimmungsArgumente:
+        if getInput("Sind weitere Gebäude vorhanden? [J/N]: ", str, getch=True).lower() in zustimmungsArgumente:
             continue;
         else:
             break;
@@ -235,7 +251,7 @@ def calculateResult(teilFlächenListe: list = []) -> list:
         for teilFläche in teilFlächenListe:
             if teilFläche.raumNummer == i:
                 raumFläche += teilFläche.teilFläche;
-        print("Die Fläche für Raum " + str(teilFlächenListe[i].raumName) + "(" + str(i) + ")", "beträgt:", str(raumFläche) + "m²");
+        print("Die Fläche für Raum " + str(teilFlächenListe[i].raumName) + "(" + str(i) + ")", "beträgt:", str(raumFläche) + "m²", str(teilFlächenListe[i].gebäudeName));
         gebäudeFläche += raumFläche;
     print("Die gesamte Fläche des Gebäudes beträgt:", str(gebäudeFläche) + "m²");
     print("Die durchschnittliche Fläche eines Raumes beträgt:", str(gebäudeFläche / (anzahlRäume if anzahlRäume > 0 else 1)) + "m²"); # Don't get confused, this just gets rid of div/0
